@@ -1,14 +1,13 @@
-// Relevance categories with their thresholds
-const RELEVANCE_CATEGORIES = {
-    FAIR_DINKUM: { label: "Fair Dinkum - She's a Beauty!", minScore: 0.8 },
-    SHELL_BE_RIGHT: { label: "She'll Be Right (I hope)", minScore: 0.6 },
-    WOOP_WOOP: { label: "Heading for Woop Woop", minScore: 0.4 },
-    BUCKLEYS: { label: "Two Chances: Buckley's or None!", minScore: 0 }
-};
+import { RELEVANCE_CATEGORIES } from './scorer.js';
 
-class PlanningAnalyzer {
-    constructor() {
-        // Get DOM elements
+export class AnalyzerUI {
+    constructor(scorer) {
+        this.scorer = scorer;
+        this.initializeElements();
+        this.setupEventListeners();
+    }
+
+    initializeElements() {
         this.dropZone = document.getElementById('analyzer');
         this.resultsContainer = document.getElementById('results');
         this.urlInput = document.getElementById('urlInput');
@@ -18,18 +17,21 @@ class PlanningAnalyzer {
         this.toggleSourceButton = document.getElementById('toggleSourceButton');
         this.sourceInputGroup = document.querySelector('.source-input-group');
 
-        this.setupEventListeners();
-        this.loadRepositories();
+        // Always start with URL input
+        this.showUrlInput();
     }
 
-    async loadRepositories() {
-        try {
-            const response = await fetch('https://api.github.com/orgs/planningalerts-scrapers/repos');
-            this.repositories = await response.json();
-        } catch (error) {
-            console.error('Failed to load repositories:', error);
-            this.showError("Couldn't load scrapers list. Please try again later.");
-        }
+    showUrlInput() {
+        this.dropZone.style.display = 'flex';
+        this.sourceInputGroup.style.display = 'none';
+        this.toggleSourceButton.innerHTML = '<i class="fas fa-code"></i> I have HTML source to chuck on the BBQ!';
+    }
+
+    showSourceInput() {
+        this.dropZone.style.display = 'none';
+        this.sourceInputGroup.style.display = 'flex';
+        this.toggleSourceButton.innerHTML = '<i class="fas fa-arrow-left"></i> Back to URL drop';
+        this.sourceInput.focus();
     }
 
     setupEventListeners() {
@@ -53,20 +55,12 @@ class PlanningAnalyzer {
             if (source) this.analyzeContent(source);
         });
 
-        // Toggle between drop zone and source input
+        // Toggle between views
         this.toggleSourceButton.addEventListener('click', () => {
-            const dropZone = document.getElementById('analyzer');
-            const sourceGroup = document.querySelector('.source-input-group');
-            const isShowingDropZone = dropZone.style.display !== 'none';
-
-            if (isShowingDropZone) {
-                dropZone.style.display = 'none';
-                sourceGroup.style.display = 'flex';
-                this.toggleSourceButton.innerHTML = '<i class="fas fa-arrow-left"></i> Back to URL drop';
+            if (this.dropZone.style.display !== 'none') {
+                this.showSourceInput();
             } else {
-                dropZone.style.display = 'flex';
-                sourceGroup.style.display = 'none';
-                this.toggleSourceButton.innerHTML = '<i class="fas fa-code"></i> I have HTML source to chuck on the BBQ!';
+                this.showUrlInput();
             }
         });
 
@@ -95,7 +89,7 @@ class PlanningAnalyzer {
             setTimeout(() => {
                 const url = this.urlInput.value.trim();
                 if (url) this.analyzeUrl(url);
-            }, 0);
+            }, 100);
         });
     }
 
@@ -119,88 +113,14 @@ class PlanningAnalyzer {
                     <li>Paste the source into the text area</li>
                 </ol>
             `);
-            this.sourceInputGroup.style.display = 'block';
-            this.toggleSourceButton.innerHTML = '<i class="fas fa-code"></i> Hide Source Input';
+            this.showSourceInput();
         }
     }
 
-    async analyzeContent(content) {
-        if (!this.repositories) {
-            await this.loadRepositories();
-        }
-
-        const scores = this.scoreRepositories(content);
-        const categorized = this.categorizeResults(scores);
+    analyzeContent(content) {
+        const scores = this.scorer.scoreContent(content);
+        const categorized = this.scorer.categorizeResults(scores);
         this.displayResults(categorized);
-    }
-
-    scoreRepositories(pageContent) {
-        return this.repositories.map(repo => {
-            const name = repo.name.replace('multiple_', '');
-            let score = 0;
-
-            // Special case checks
-            if (pageContent.includes('/civica.jquery.') && name === 'civica') {
-                score = 1;
-            } else if (pageContent.toLowerCase().includes('planbuild tasmania') && name === 'planbuild') {
-                score = 1;
-            } else if (pageContent.includes('/ePathway/') && name === 'epathway_scraper') {
-                score = 1;
-            } else {
-                // Basic text matching
-                const nameScore = this.calculateMatchScore(pageContent, name);
-                const descriptionScore = this.calculateDescriptionScore(pageContent, repo.description);
-                score = Math.max(nameScore, descriptionScore);
-            }
-
-            return {
-                name: repo.name,
-                score,
-                url: repo.html_url,
-                description: repo.description
-            };
-        });
-    }
-
-    calculateMatchScore(content, term) {
-        const lowerContent = content.toLowerCase();
-        const lowerTerm = term.toLowerCase();
-
-        // Higher score for exact matches with word boundaries
-        const wordBoundaryRegex = new RegExp(`\\b${term}\\b`, 'i');
-        if (wordBoundaryRegex.test(content)) {
-            return 0.9;
-        }
-
-        // Lower score for partial matches
-        if (lowerContent.includes(lowerTerm)) {
-            return 0.5;
-        }
-
-        return 0;
-    }
-
-    calculateDescriptionScore(content, description) {
-        if (!description) return 0;
-
-        const words = description.toLowerCase().split(/\s+/);
-        const matches = words.filter(word =>
-            word.length > 3 && content.toLowerCase().includes(word)
-        );
-
-        return matches.length / words.length * 0.7;
-    }
-
-    categorizeResults(scores) {
-        const categorized = {};
-
-        for (const category in RELEVANCE_CATEGORIES) {
-            categorized[category] = scores.filter(
-                repo => repo.score >= RELEVANCE_CATEGORIES[category].minScore
-            ).sort((a, b) => b.score - a.score);
-        }
-
-        return categorized;
     }
 
     displayResults(categorizedResults) {
@@ -246,6 +166,7 @@ class PlanningAnalyzer {
                 <p>She's thinking...</p>
             </div>
         `;
+        this.resultsContainer.scrollIntoView({ behavior: 'smooth' });
     }
 
     showError(message) {
@@ -256,10 +177,6 @@ class PlanningAnalyzer {
                 <div class="error-message">${message}</div>
             </div>
         `;
+        this.resultsContainer.scrollIntoView({ behavior: 'smooth' });
     }
 }
-
-// Initialize the analyzer when the page loads
-document.addEventListener('DOMContentLoaded', () => {
-    new PlanningAnalyzer();
-});

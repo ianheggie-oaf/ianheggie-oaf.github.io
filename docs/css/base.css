@@ -62,87 +62,9 @@ footer {
     }
 }
 
-/* Form elements */
+/* Basic form elements */
 input, button {
     padding: 0.5rem 1rem;
     border-radius: 4px;
     border: 1px solid var(--border-color);
-}
-
-/* Layout for analyzer specific elements */
-.drop-zone {
-    min-height: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 2rem 0;
-}
-
-.results-container {
-    margin-top: 2rem;
-}
-
-.input-row {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-end;
-    margin-bottom: 1rem;
-}
-
-.url-input-group {
-    flex: 1;
-}
-
-.flex-row {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.url-input {
-    flex: 1;
-}
-
-#contentArea {
-    min-height: 200px;
-    margin: 1rem 0;
-}
-
-.drop-zone, .source-input-group {
-    height: 200px;
-}
-
-.source-input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-#sourceInput {
-    flex: 1;
-    padding: 1rem;
-    border: 3px dashed var(--border-color);
-    border-radius: 8px;
-    resize: none;
-    font-family: monospace;
-}
-
-#sourceInput:focus {
-    border-color: var(--primary-color);
-    outline: none;
-}
-
-.button-secondary {
-    white-space: nowrap;
-    padding: 0.8rem 1.5rem;
-    background-color: transparent;
-    color: var(--primary-color);
-    border: 2px solid var(--primary-color);
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.button-secondary:hover {
-    background-color: var(--primary-color);
-    color: white;
 }
