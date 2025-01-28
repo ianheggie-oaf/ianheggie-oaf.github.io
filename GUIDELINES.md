@@ -6,6 +6,14 @@ which publishes from /docs into [this site](https://ianheggie-oaf.github.io/)
 Currently it's a landing page that will also host a tool called "Cricky, what's that?" 
 for analyzing planning websites to identify which scraper to use.
 
+I am an Auusie Developer with a quirky sense of humour, I want clean subtle 
+humour in wording - friendly without being "in your face"!
+
+Note - ONLY do what I have asked! I welcome terse suggestions
+but keep focused. When we have finished the task on hand I will
+come back to what you suggested and tell you when you can go
+wild!
+
 Current structure:
 /docs/
 ├── index.html           # Landing page with hero image
