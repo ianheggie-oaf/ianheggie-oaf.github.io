@@ -1,7 +1,7 @@
 # GUIDELINES for AI's
 
 I'm working on my personal GitHub Pages site at github.com/ianheggie-oaf/ianheggie-oaf.github.io 
-which publishes from /docs.
+which publishes from /docs into [this site](https://ianheggie-oaf.github.io/)
 
 Currently it's a landing page that will also host a tool called "Cricky, what's that?" 
 for analyzing planning websites to identify which scraper to use.
