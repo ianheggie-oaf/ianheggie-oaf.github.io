@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# Exit on any error
+set -e
+
+# Function to show error and exit
+error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+# Ensure we're in the project root
+cd "$(dirname "$0")/.." || error "Could not change to project root directory"
+
+# Check if we're in a git repository
+git rev-parse --git-dir > /dev/null 2>&1 || error "Not in a git repository"
+
+# Check if we have any uncommitted changes
+if ! git diff-index --quiet HEAD --; then
+    error "You have uncommitted changes. Please commit or stash them first."
+fi
+
+# Get deployment timestamp
+DATE=$(date "+%Y-%m-%d %H:%M:%S") || error "Could not get current date"
+
+echo "Creating version.js with build info..."
+mkdir -p docs/js || error "Could not create js directory"
+cat > docs/js/version.js << EOF || error "Could not write version.js"
+// Auto-generated file - do not edit
+document.addEventListener('DOMContentLoaded', () => {
+    const deployed = document.getElementById('deployed');
+    if (deployed) {
+        deployed.title = 'Deployed: ${DATE}';
+    }
+});
+EOF
+
+echo "Amending previous commit..."
+# Stage the version file
+git add docs/js/version.js || error "Could not stage version.js"
+
+# Amend the previous commit, keeping its message
+git commit --amend --no-edit || error "Could not amend commit"
+
+echo "Pushing to remote..."
+# Force push with lease for safety
+git push --force-with-lease || error "Could not push to remote. Have there been upstream changes?"
+
+echo "Successfully deployed!"
+echo "Deployment time: ${DATE}"
