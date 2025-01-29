@@ -209,3 +209,35 @@
 .loading i {
     margin-right: 0.5rem;
 }
+
+.stats {
+    margin-top: 1rem;
+    padding: 0.8rem;
+    border-radius: 4px;
+    background: rgba(0, 132, 61, 0.1);
+    color: var(--primary-color);
+    font-size: 0.9rem;
+}
+
+.stats p {
+    margin: 0;
+}
+
+.stats i {
+    margin-right: 0.5rem;
+}
+
+.stats.warning {
+    background: rgba(255, 152, 0, 0.1);
+    color: #f57c00;
+}
+
+.button:disabled,
+.button-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #ccc;
+    border-color: #ccc;
+    color: #666;
+}
+

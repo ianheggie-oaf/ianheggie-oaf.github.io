@@ -5,6 +5,7 @@ export class AnalyzerUI {
         this.scorer = scorer;
         this.initializeElements();
         this.setupEventListeners();
+        this.showStats();
     }
 
     initializeElements() {
@@ -19,6 +20,27 @@ export class AnalyzerUI {
 
         // Always start with URL input
         this.showUrlInput();
+    }
+
+    showStats() {
+        const stats = this.scorer.getRepoStats();
+        const statsDiv = document.createElement('div');
+        statsDiv.className = this.scorer.hasLimitedAccess() ? 'stats warning' : 'stats';
+
+        statsDiv.innerHTML = `
+            <p>
+                <i class="fas fa-database"></i>
+                Loaded ${stats.total} scrapers (${stats.multiple} multi-council)
+                ${this.scorer.hasLimitedAccess() ?
+            `<br><i class="fas fa-exclamation-triangle"></i> 
+                     G'day! Log into your GitHub account to see our full list of scrapers, mate!`
+            : ''}
+            </p>
+        `;
+
+        // Insert stats after the input section
+        const inputSection = document.querySelector('.input-section');
+        inputSection.appendChild(statsDiv);
     }
 
     showUrlInput() {
@@ -152,23 +174,23 @@ export class AnalyzerUI {
     }
 
     formatRepoResult(repo) {
-        // Sort matches by score
-        const sortedMatches = repo.matches.sort((a, b) => b.score - a.score);
-
         // Function to highlight matched words
         const highlightMatches = (text, matches) => {
             if (!text) return '';
             let highlighted = text;
             matches.forEach(match => {
                 const regex = new RegExp(`(${match.word})`, 'gi');
-                highlighted = highlighted.replace(regex, `<span class="match-word" title="Found ${match.count} times">${'$1'}</span>`);
+                const tooltip = match.isName ?
+                    `Strong match: ${match.count} occurrences` :
+                    `Found ${match.count} times`;
+                highlighted = highlighted.replace(regex, `<span class="match-word" title="${tooltip}">${'$1'}</span>`);
             });
             return highlighted;
         };
 
         // Get matches for name and description separately
-        const nameMatches = sortedMatches.filter(m => m.isName);
-        const descMatches = sortedMatches.filter(m => !m.isName);
+        const nameMatches = repo.matches.filter(m => m.isName);
+        const descMatches = repo.matches.filter(m => !m.isName);
 
         return `
             <div class="repo-item">

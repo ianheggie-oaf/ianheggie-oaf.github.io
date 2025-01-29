@@ -7,6 +7,7 @@ class PlanningAnalyzer {
             this.ui = new AnalyzerUI(this.scorer);
         }).catch(error => {
             console.error('Failed to initialize analyzer:', error);
+            this.showFatalError(error.message);
         });
     }
 
@@ -19,18 +20,25 @@ class PlanningAnalyzer {
             const repositories = await response.json();
             this.scorer = new ScraperScorer(repositories);
         } catch (error) {
-            console.error('Failed to load repositories:', error);
-            document.getElementById('results').innerHTML = `
-                <div class="error">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <div class="error-message">
-                        Couldn't load scrapers list. Please try again later.
-                        <br><br>
-                        Error: ${error.message}
-                    </div>
-                </div>
-            `;
+            if (!error.message.includes("Crikey")) {
+                throw new Error("Strewth! Couldn't connect to GitHub. Give it another go later, mate!");
+            }
+            throw error;
         }
+    }
+
+    showFatalError(message) {
+        const buttons = document.querySelectorAll('.button, .button-secondary');
+        buttons.forEach(button => {
+            button.disabled = true;
+        });
+
+        document.getElementById('results').innerHTML = `
+            <div class="error">
+                <i class="fas fa-exclamation-circle"></i>
+                <div class="error-message">${message}</div>
+            </div>
+        `;
     }
 }
 

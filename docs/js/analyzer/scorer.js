@@ -20,20 +20,28 @@ export class ScraperScorer {
     constructor(repositories) {
         // Filter and process repositories
         this.repositories = this.processRepositories(repositories);
-        this.checkMultipleRepos();
+        this.multipleRepoCount = this.repositories.filter(repo => repo.name.startsWith('multiple_')).length;
+        this.wordFreq = {};
         this.buildWordFrequencies();
     }
 
     processRepositories(repos) {
+        if (!repos?.length) {
+            throw new Error("Crikey! We couldn't load any scrapers. Check your connection and try again later.");
+        }
         // Remove duplicates by name
         return [...new Map(repos.map(repo => [repo.name, repo])).values()];
     }
 
-    checkMultipleRepos() {
-        const multipleRepos = this.repositories.filter(repo => repo.name.startsWith('multiple_'));
-        if (multipleRepos.length < 5) {
-            throw new Error("G'day! Looks like we can't see all the scrapers. You might need to log into GitHub for the full list, mate!");
-        }
+    hasLimitedAccess() {
+        return this.multipleRepoCount < 5;
+    }
+
+    getRepoStats() {
+        return {
+            total: this.repositories.length,
+            multiple: this.multipleRepoCount
+        };
     }
 
     buildWordFrequencies() {

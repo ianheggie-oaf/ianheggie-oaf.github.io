@@ -47,4 +47,10 @@ echo "Pushing to remote..."
 git push --force-with-lease || error "Could not push to remote. Have there been upstream changes?"
 
 echo "Successfully deployed!"
-echo "Deployment time: ${DATE}"
+echo "Deployment time: ${DATE} ... it takes about 40 seconds for the site to be updated ... sleeping 45 seconds ..."
+sleep 15
+echo "30 ..."
+sleep 15
+echo "15 ..."
+sleep 15
+echo "Refresh the page, it should be there now!"
