@@ -139,14 +139,7 @@ export class AnalyzerUI {
             categoryDiv.innerHTML = `
                 <h3>${category.label}</h3>
                 <div class="repo-list">
-                    ${repos.map(repo => `
-                        <div class="repo-item">
-                            <h4><a href="${repo.url}" target="_blank" rel="noopener noreferrer">
-                                ${repo.name}
-                            </a></h4>
-                            ${repo.description ? `<p>${repo.description}</p>` : ''}
-                        </div>
-                    `).join('')}
+                    ${repos.map(repo => this.formatRepoResult(repo)).join('')}
                 </div>
             `;
 
@@ -158,6 +151,40 @@ export class AnalyzerUI {
         }
     }
 
+    formatRepoResult(repo) {
+        // Sort matches by score
+        const sortedMatches = repo.matches.sort((a, b) => b.score - a.score);
+
+        // Function to highlight matched words
+        const highlightMatches = (text, matches) => {
+            if (!text) return '';
+            let highlighted = text;
+            matches.forEach(match => {
+                const regex = new RegExp(`(${match.word})`, 'gi');
+                highlighted = highlighted.replace(regex, `<span class="match-word" title="Found ${match.count} times">${'$1'}</span>`);
+            });
+            return highlighted;
+        };
+
+        // Get matches for name and description separately
+        const nameMatches = sortedMatches.filter(m => m.isName);
+        const descMatches = sortedMatches.filter(m => !m.isName);
+
+        return `
+            <div class="repo-item">
+                <h4>
+                    <a href="${repo.url}" target="_blank" rel="noopener noreferrer">
+                        ${highlightMatches(repo.name, nameMatches)}
+                    </a>
+                    <span class="score" title="Match score">${(repo.percentage * 100).toFixed(0)}%</span>
+                </h4>
+                ${repo.description ?
+            `<p>${highlightMatches(repo.description, descMatches)}</p>` :
+            ''}
+            </div>
+        `;
+    }
+
     showLoading() {
         if (!this.resultsContainer) return;
         this.resultsContainer.innerHTML = `
@@ -166,7 +193,6 @@ export class AnalyzerUI {
                 <p>She's thinking...</p>
             </div>
         `;
-        this.resultsContainer.scrollIntoView({ behavior: 'smooth' });
     }
 
     showError(message) {
@@ -177,6 +203,5 @@ export class AnalyzerUI {
                 <div class="error-message">${message}</div>
             </div>
         `;
-        this.resultsContainer.scrollIntoView({ behavior: 'smooth' });
     }
 }

@@ -140,6 +140,7 @@
 }
 
 .repo-item {
+    position: relative;
     padding: 1rem;
     background: #f8f9fa;
     border-radius: 4px;
@@ -149,6 +150,7 @@
 .repo-item h4 {
     margin: 0;
     margin-bottom: 0.5rem;
+    padding-right: 4rem; /* Make room for score */
 }
 
 .repo-item a {
@@ -164,6 +166,24 @@
     margin: 0;
     color: #666;
     font-size: 0.9rem;
+}
+
+.score {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    font-size: 0.8rem;
+    color: var(--primary-color);
+    background: rgba(0, 132, 61, 0.1);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+}
+
+.match-word {
+    background-color: rgba(0, 132, 61, 0.1);
+    border-radius: 2px;
+    padding: 0.1rem 0.2rem;
+    cursor: help;
 }
 
 /* Status messages */
